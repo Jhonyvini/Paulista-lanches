@@ -1,0 +1,592 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Paulista Lanches</title>
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=Oswald:wght@500;700&display=swap" rel="stylesheet">
+
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        brand: {
+                            red: '#DC2626',       
+                            yellow: '#FBBF24',    
+                            orange: '#EA580C',    
+                        }
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                        display: ['Oswald', 'sans-serif'],
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        body { -webkit-tap-highlight-color: transparent; }
+        .hide-scrollbar::-webkit-scrollbar { display: none; }
+        .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+        .modal-enter { animation: slideUp 0.3s ease-out forwards; }
+        @keyframes slideUp { from { transform: translateY(100%); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+        .tab-active { color: #EA580C; }
+        .tab-inactive { color: #9CA3AF; }
+    </style>
+</head>
+<body class="bg-gray-50 text-gray-800 font-sans h-[100dvh] flex flex-col overflow-hidden">
+
+    <script>
+        const CONFIG = {
+            STORE_NAME: "Paulista Lanches", 
+            PHONE_NUMBER: "5531995466442",   
+            DELIVERY_FEE: 0.00               
+        };
+    </script>
+
+    <header class="bg-brand-orange text-white shadow-lg z-20 flex-none relative overflow-hidden">
+        <div class="absolute inset-0 bg-gradient-to-r from-red-600 to-orange-500 opacity-90"></div>
+        <div class="px-4 py-3 flex items-center justify-between relative z-10">
+            <div class="flex items-center gap-3">
+                <div class="bg-white p-2 rounded-full shadow-md text-brand-orange">
+                    <i data-lucide="chef-hat" class="w-5 h-5"></i>
+                </div>
+                <div>
+                    <h1 class="font-display text-xl font-bold italic uppercase leading-none tracking-wide text-shadow">Paulista</h1>
+                    <span class="text-[10px] font-bold text-yellow-300 tracking-widest uppercase">Lanches & Pizzas</span>
+                </div>
+            </div>
+            <div id="header-cart-info" class="text-xs font-bold bg-white text-brand-orange px-3 py-1.5 rounded-full hidden shadow-lg animate-pulse">
+                R$ <span id="header-total">0,00</span>
+            </div>
+        </div>
+    </header>
+
+    <main id="app-content" class="flex-1 overflow-y-auto hide-scrollbar pb-32 relative scroll-smooth bg-gray-50">
+        </main>
+
+    <div id="variant-modal" class="fixed inset-0 bg-black/60 z-50 hidden flex items-end justify-center backdrop-blur-sm">
+        <div class="bg-white w-full rounded-t-3xl p-6 shadow-2xl modal-enter max-w-md mx-auto">
+            <div class="flex justify-between items-start mb-6 border-b border-gray-100 pb-4">
+                <div>
+                    <h3 id="modal-variant-title" class="text-2xl font-display font-bold text-gray-800">Pizza</h3>
+                    <p class="text-gray-500 text-xs font-medium uppercase tracking-wide mt-1">Escolha o tamanho</p>
+                </div>
+                <button onclick="closeModal()" class="p-2 bg-gray-50 rounded-full hover:bg-gray-200 text-gray-500">
+                    <i data-lucide="x" class="w-6 h-6"></i>
+                </button>
+            </div>
+
+            <div class="space-y-3 mb-8">
+                <label class="flex items-center justify-between p-4 border-2 border-gray-100 rounded-2xl cursor-pointer hover:border-orange-500 hover:bg-orange-50 transition-all group" onclick="selectSize('M')">
+                    <div class="flex items-center gap-4">
+                        <div class="w-6 h-6 rounded-full border-2 border-gray-300 flex items-center justify-center group-hover:border-orange-500" id="radio-M">
+                            <div class="w-3 h-3 bg-orange-500 rounded-full hidden" id="dot-M"></div>
+                        </div>
+                        <div class="flex flex-col">
+                            <span class="font-bold text-gray-700">Média</span>
+                            <span class="text-xs text-gray-500">25cm - 4 Fatias</span>
+                        </div>
+                    </div>
+                    <span class="font-display font-bold text-lg text-brand-orange" id="price-M">R$ 29,00</span>
+                </label>
+
+                <label class="flex items-center justify-between p-4 border-2 border-gray-100 rounded-2xl cursor-pointer hover:border-orange-500 hover:bg-orange-50 transition-all group" onclick="selectSize('G')">
+                    <div class="flex items-center gap-4">
+                        <div class="w-6 h-6 rounded-full border-2 border-gray-300 flex items-center justify-center group-hover:border-orange-500" id="radio-G">
+                            <div class="w-3 h-3 bg-orange-500 rounded-full hidden" id="dot-G"></div>
+                        </div>
+                        <div class="flex flex-col">
+                            <span class="font-bold text-gray-700">Grande</span>
+                            <span class="text-xs text-gray-500">30cm - 8 Fatias</span>
+                        </div>
+                    </div>
+                    <span class="font-display font-bold text-lg text-brand-orange" id="price-G">R$ 32,00</span>
+                </label>
+
+                <label class="flex items-center justify-between p-4 border-2 border-gray-100 rounded-2xl cursor-pointer hover:border-orange-500 hover:bg-orange-50 transition-all group" onclick="selectSize('GG')">
+                    <div class="flex items-center gap-4">
+                        <div class="w-6 h-6 rounded-full border-2 border-gray-300 flex items-center justify-center group-hover:border-orange-500" id="radio-GG">
+                            <div class="w-3 h-3 bg-orange-500 rounded-full hidden" id="dot-GG"></div>
+                        </div>
+                        <div class="flex flex-col">
+                            <span class="font-bold text-gray-700">Gigante</span>
+                            <span class="text-xs text-gray-500">35cm - 8 Fatias</span>
+                        </div>
+                    </div>
+                    <span class="font-display font-bold text-lg text-brand-orange" id="price-GG">R$ 37,00</span>
+                </label>
+            </div>
+
+            <button onclick="confirmVariantAdd()" class="w-full bg-brand-orange text-white py-4 rounded-xl font-bold text-lg shadow-xl shadow-orange-200 active:scale-95 transition-transform flex items-center justify-center gap-2">
+                Adicionar <i data-lucide="shopping-bag" class="w-5 h-5"></i>
+            </button>
+        </div>
+    </div>
+
+    <div id="toast" class="fixed top-6 left-1/2 transform -translate-x-1/2 bg-gray-900 text-white px-6 py-3 rounded-full shadow-2xl z-50 flex items-center gap-3 transition-all opacity-0 pointer-events-none scale-90">
+        <i data-lucide="check-circle" class="w-5 h-5 text-green-400"></i>
+        <span class="font-bold">Adicionado com sucesso!</span>
+    </div>
+
+    <nav class="fixed bottom-0 left-0 w-full bg-white border-t border-gray-100 flex justify-around items-center py-3 px-2 pb-safe shadow-[0_-10px_40px_-15px_rgba(0,0,0,0.1)] z-40 rounded-t-2xl">
+        <button onclick="switchTab('menu')" class="flex flex-col items-center gap-1 p-2 w-1/3 transition-colors tab-active" id="nav-menu">
+            <i data-lucide="book-open" class="w-6 h-6"></i>
+            <span class="text-[10px] font-bold uppercase tracking-wide">Cardápio</span>
+        </button>
+        
+        <button onclick="switchTab('cart')" class="flex flex-col items-center gap-1 p-2 w-1/3 transition-colors tab-inactive relative" id="nav-cart">
+            <div class="relative">
+                <i data-lucide="shopping-bag" class="w-6 h-6"></i>
+                <span id="badge-count" class="absolute -top-2 -right-2 bg-red-600 text-white text-[10px] font-bold w-5 h-5 flex items-center justify-center rounded-full opacity-0 transition-opacity border-2 border-white">0</span>
+            </div>
+            <span class="text-[10px] font-bold uppercase tracking-wide">Sacola</span>
+        </button>
+        
+        <button onclick="switchTab('about')" class="flex flex-col items-center gap-1 p-2 w-1/3 transition-colors tab-inactive" id="nav-about">
+            <i data-lucide="store" class="w-6 h-6"></i>
+            <span class="text-[10px] font-bold uppercase tracking-wide">Loja</span>
+        </button>
+    </nav>
+
+    <script>
+        // --- DADOS REAIS DO PDF ---
+        // Preços das Pizzas baseados no PDF: M=29, G=32, GG=37
+        const PIZZA_PRICES = { M: 29.00, G: 32.00, GG: 37.00 };
+
+        const menuData = [
+            {
+                category: "Lanches",
+                icon: "sandwich",
+                items: [
+                    { id: 1, name: "Misto Quente", price: 10.00, desc: "Pão, presunto, mussarela e tomate.", image: "" },
+                    { id: 2, name: "Hambúrguer", price: 12.00, desc: "Pão, carne, alface, tomate e batata.", image: "" },
+                    { id: 3, name: "X-Burguer", price: 14.00, desc: "Pão, carne, queijo, alface, tomate e batata.", image: "" },
+                    { id: 4, name: "X-Salada", price: 16.00, desc: "Pão, carne, queijo, presunto, alface, tomate, milho e batata.", image: "" },
+                    { id: 5, name: "X-Egg", price: 18.00, desc: "Pão, carne, queijo, presunto, ovo, alface, tomate, milho e batata.", image: "" },
+                    { id: 6, name: "X-Egg Bacon", price: 23.00, desc: "Pão, carne, queijo, presunto, bacon, ovo, alface, tomate, milho e batata.", image: "" },
+                    { id: 7, name: "X-Bacon", price: 22.00, desc: "Pão, carne, queijo, presunto, bacon, alface, tomate, milho e batata.", image: "" },
+                    { id: 8, name: "X-Calabresa", price: 20.00, desc: "Pão, carne, queijo, presunto, calabresa, alface, tomate, milho e batata.", image: "" },
+                    { id: 9, name: "X-Frango", price: 20.00, desc: "Pão, frango, queijo, presunto, alface, tomate, milho e batata.", image: "" },
+                    { id: 10, name: "X-Tudo", price: 26.00, desc: "Pão, carne, frango, queijo, presunto, bacon, calabresa, ovo, alface, tomate, milho e batata.", image: "" },
+                    { id: 11, name: "X-Paulista", price: 30.00, desc: "Pão, 2 carnes, frango, queijo, presunto, bacon, calabresa, ovo, catupiry, cheddar, alface, tomate, milho e batata.", image: "" }
+                ]
+            },
+            {
+                category: "Hot Dogs",
+                icon: "utensils", // Ícone genérico pois lucide não tem hotdog
+                items: [
+                    { id: 20, name: "Hot Dog Simples", price: 10.00, desc: "Pão, salsicha, milho, purê, presunto, batata e frutas cristalizadas.", image: "" },
+                    { id: 21, name: "Hot Dog + Frango", price: 13.00, desc: "Completo + Frango desfiado.", image: "" },
+                    { id: 22, name: "Hot Dog + Calabresa", price: 14.00, desc: "Completo + Calabresa.", image: "" },
+                    { id: 23, name: "Hot Dog + Bacon", price: 13.00, desc: "Completo + Bacon.", image: "" },
+                    { id: 24, name: "Hot Dog + Catupiry", price: 14.00, desc: "Completo + Catupiry.", image: "" },
+                    { id: 25, name: "Hot Dog Big Completo", price: 18.00, desc: "Salsicha, queijo, calabresa, frango, bacon, catupiry e tudo mais.", image: "" }
+                ]
+            },
+            {
+                category: "Pizzas",
+                icon: "pizza",
+                isVariant: true,
+                items: [
+                    { id: 101, name: "À Moda", priceM: PIZZA_PRICES.M, priceG: PIZZA_PRICES.G, priceGG: PIZZA_PRICES.GG, desc: "Mussarela, Presunto, Calabresa, Bacon, Milho, Cebola, Pimentão, Tomate, Orégano e Azeitona.", image: "" },
+                    { id: 102, name: "Mussarela", priceM: PIZZA_PRICES.M, priceG: PIZZA_PRICES.G, priceGG: PIZZA_PRICES.GG, desc: "Mussarela, Tomate, Orégano e Azeitona.", image: "" },
+                    { id: 103, name: "Presunto", priceM: PIZZA_PRICES.M, priceG: PIZZA_PRICES.G, priceGG: PIZZA_PRICES.GG, desc: "Mussarela, Presunto, Cebola, Pimentão, Tomate, Orégano e Azeitona.", image: "" },
+                    { id: 104, name: "Calabresa", priceM: PIZZA_PRICES.M, priceG: PIZZA_PRICES.G, priceGG: PIZZA_PRICES.GG, desc: "Mussarela, Calabresa, Cebola, Pimentão, Tomate, Orégano e Azeitona.", image: "" },
+                    { id: 105, name: "Bacon c/ Milho", priceM: PIZZA_PRICES.M, priceG: PIZZA_PRICES.G, priceGG: PIZZA_PRICES.GG, desc: "Mussarela, Bacon, Milho, Cebola, Tomate, Pimentão, Orégano e Azeitona.", image: "" },
+                    { id: 106, name: "Portuguesa", priceM: PIZZA_PRICES.M, priceG: PIZZA_PRICES.G, priceGG: PIZZA_PRICES.GG, desc: "Mussarela, Presunto, Ovo, Calabresa, Milho, Cebola, Tomate, Pimentão, Orégano e Azeitona.", image: "" },
+                    { id: 107, name: "Espanhola", priceM: PIZZA_PRICES.M, priceG: PIZZA_PRICES.G, priceGG: PIZZA_PRICES.GG, desc: "Mussarela, Presunto, Calabresa, Cebola, Tomate, Pimentão, Orégano e Azeitona.", image: "" },
+                    { id: 108, name: "Atum", priceM: PIZZA_PRICES.M, priceG: PIZZA_PRICES.G, priceGG: PIZZA_PRICES.GG, desc: "Mussarela, Atum, Cebola e Azeitona.", image: "" }
+                ]
+            },
+            {
+                category: "Bebidas",
+                icon: "cup-soda",
+                items: [
+                    { id: 401, name: "Refrigerante Lata", price: 6.00, desc: "350ml", image: "" },
+                    { id: 402, name: "Refrigerante 600ml", price: 8.00, desc: "", image: "" },
+                    { id: 403, name: "Refrigerante 2L", price: 14.00, desc: "", image: "" },
+                    { id: 404, name: "Suco Lata", price: 7.00, desc: "Del Valle", image: "" },
+                    { id: 405, name: "Água Mineral", price: 4.00, desc: "500ml", image: "" }
+                ]
+            }
+        ];
+
+        // --- SISTEMA ---
+        let cart = [];
+        let tempVariantSelection = null; 
+        const formatMoney = (val) => val.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+
+        function handleImgError(img, iconName) {
+            const parent = img.parentElement;
+            parent.innerHTML = `<div class="w-full h-full bg-orange-50 rounded-lg flex items-center justify-center text-orange-200"><i data-lucide="${iconName}" class="w-8 h-8"></i></div>`;
+            lucide.createIcons();
+        }
+
+        function init() { renderMenu(); lucide.createIcons(); }
+
+        function renderMenu() {
+            const container = document.getElementById('app-content');
+            let html = `
+                <div class="bg-gradient-to-b from-orange-50 to-gray-50 p-4 mb-2">
+                    <div class="flex items-center justify-between mb-4">
+                        <div>
+                            <h2 class="font-display font-bold text-2xl text-gray-800">Cardápio</h2>
+                            <p class="text-sm text-gray-500">O que você deseja hoje?</p>
+                        </div>
+                    </div>
+                    
+                    <div class="flex gap-3 overflow-x-auto hide-scrollbar pb-2">
+                        ${menuData.map(cat => `
+                            <a href="#cat-${cat.category.replace(/\s+/g, '-')}" class="flex-none flex flex-col items-center gap-2 min-w-[70px] group">
+                                <div class="w-16 h-16 bg-white rounded-2xl shadow-sm border border-gray-100 flex items-center justify-center text-gray-400 group-hover:bg-brand-orange group-hover:text-white group-hover:shadow-orange-200 group-hover:shadow-lg transition-all">
+                                    <i data-lucide="${cat.icon}" class="w-7 h-7"></i>
+                                </div>
+                                <span class="text-[10px] font-bold text-gray-400 uppercase tracking-wide group-hover:text-brand-orange transition-colors">${cat.category}</span>
+                            </a>
+                        `).join('')}
+                    </div>
+                </div>
+            `;
+
+            menuData.forEach(cat => {
+                html += `
+                    <div id="cat-${cat.category.replace(/\s+/g, '-')}" class="px-4 mb-8 scroll-mt-32">
+                        <div class="flex items-center gap-3 mb-4">
+                            <div class="h-6 w-1 bg-brand-orange rounded-full"></div>
+                            <h2 class="text-xl font-display font-bold text-gray-800 uppercase tracking-wide">${cat.category}</h2>
+                        </div>
+                        <div class="grid gap-3">
+                `;
+
+                cat.items.forEach(item => {
+                    const isVariant = cat.isVariant;
+                    const priceDisplay = isVariant 
+                        ? `<div class="flex flex-col items-end"><span class="text-[10px] text-gray-400 uppercase font-bold">A partir de</span><span class="font-bold text-brand-orange text-lg">${formatMoney(item.priceM)}</span></div>`
+                        : `<span class="font-bold text-brand-orange text-lg">${formatMoney(item.price)}</span>`;
+
+                    const actionBtn = isVariant
+                        ? `onclick="openVariantModal(${JSON.stringify(item).replace(/"/g, '&quot;')})"`
+                        : `onclick="addToCart(${item.id}, '${item.name}', ${item.price})"`;
+
+                    let mediaHtml = "";
+                    if (item.image) {
+                        mediaHtml = `<div class="w-24 h-24 flex-none relative"><img src="${item.image}" class="w-full h-full rounded-lg object-cover bg-gray-100" onerror="handleImgError(this, '${cat.icon}')"></div>`;
+                    }
+
+                    html += `
+                        <div class="bg-white p-4 rounded-2xl shadow-sm border border-gray-100 flex gap-4 items-center relative overflow-hidden group active:scale-[0.98] transition-all">
+                            ${mediaHtml}
+                            <div class="flex-1 min-w-0">
+                                <div class="flex justify-between items-start">
+                                    <h3 class="font-bold text-gray-800 text-base leading-tight mb-1">${item.name}</h3>
+                                    ${priceDisplay}
+                                </div>
+                                <p class="text-xs text-gray-500 line-clamp-2 leading-relaxed mb-3 pr-8">${item.desc}</p>
+                                <button ${actionBtn} class="w-full bg-gray-50 text-brand-orange font-bold text-xs py-2 rounded-lg border border-orange-100 flex items-center justify-center gap-2 hover:bg-brand-orange hover:text-white transition-colors">
+                                    Adicionar <i data-lucide="plus" class="w-4 h-4"></i>
+                                </button>
+                            </div>
+                        </div>
+                    `;
+                });
+                html += `</div></div>`;
+            });
+            
+            html += `<div class="h-8"></div>`; 
+            container.innerHTML = html;
+            lucide.createIcons();
+        }
+
+        function renderCart() {
+            const container = document.getElementById('app-content');
+            if (cart.length === 0) {
+                container.innerHTML = `
+                    <div class="h-full flex flex-col items-center justify-center p-8 text-center bg-gray-50">
+                        <div class="bg-white p-6 rounded-full shadow-lg mb-6 relative">
+                            <div class="absolute inset-0 bg-orange-100 rounded-full animate-ping opacity-20"></div>
+                            <i data-lucide="shopping-basket" class="w-12 h-12 text-brand-orange"></i>
+                        </div>
+                        <h2 class="text-xl font-bold text-gray-800 mb-2">Sua sacola está vazia</h2>
+                        <p class="text-gray-400 mb-8 max-w-[200px] mx-auto text-sm leading-relaxed">Adicione lanches ou pizzas para começar seu pedido.</p>
+                        <button onclick="switchTab('menu')" class="bg-brand-orange text-white px-8 py-3 rounded-xl font-bold shadow-lg hover:bg-orange-600 transition-all active:scale-95 w-full max-w-xs">Ver Cardápio</button>
+                    </div>`;
+                lucide.createIcons();
+                updateHeaderTotal();
+                return;
+            }
+
+            const subtotal = cart.reduce((acc, item) => acc + (item.price * item.quantity), 0);
+            const total = subtotal + CONFIG.DELIVERY_FEE;
+
+            let html = `
+                <div class="p-4 pb-32 max-w-lg mx-auto">
+                    <h2 class="text-2xl font-display font-bold mb-6 text-gray-800 flex items-center gap-2"><i data-lucide="shopping-bag" class="text-brand-orange"></i> Seu Pedido</h2>
+                    
+                    <div class="space-y-3 mb-8">
+                        ${cart.map((item, index) => `
+                            <div class="bg-white p-4 rounded-2xl shadow-sm border border-gray-100 flex items-center justify-between">
+                                <div class="flex-1">
+                                    <h3 class="font-bold text-gray-800 text-sm">${item.name}</h3>
+                                    ${item.size ? `<span class="text-[10px] uppercase font-bold bg-orange-50 text-brand-orange px-2 py-0.5 rounded ml-0 border border-orange-100">${item.size}</span>` : ''}
+                                    <p class="text-brand-orange font-bold text-sm mt-1">${formatMoney(item.price)}</p>
+                                </div>
+                                <div class="flex items-center bg-gray-50 rounded-lg p-1 border border-gray-200 shadow-inner">
+                                    <button onclick="updateQty(${index}, -1)" class="w-8 h-8 flex items-center justify-center text-gray-400 hover:text-red-500 hover:bg-white rounded transition-all font-bold"><i data-lucide="minus" class="w-4 h-4"></i></button>
+                                    <span class="w-8 text-center text-sm font-bold text-gray-800">${item.quantity}</span>
+                                    <button onclick="updateQty(${index}, 1)" class="w-8 h-8 flex items-center justify-center text-green-600 hover:bg-white rounded transition-all font-bold"><i data-lucide="plus" class="w-4 h-4"></i></button>
+                                </div>
+                            </div>
+                        `).join('')}
+                    </div>
+
+                    <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 mb-6 space-y-3">
+                        <div class="flex justify-between text-sm text-gray-500"><span>Subtotal</span><span>${formatMoney(subtotal)}</span></div>
+                        <div class="flex justify-between text-sm text-gray-500"><span>Entrega</span><span>${CONFIG.DELIVERY_FEE === 0 ? 'A combinar' : formatMoney(CONFIG.DELIVERY_FEE)}</span></div>
+                        <div class="border-t border-dashed border-gray-200 pt-4 flex justify-between items-center mt-2">
+                            <span class="font-bold text-lg text-gray-800">Total</span>
+                            <span class="font-bold text-2xl text-brand-orange">${formatMoney(total)}</span>
+                        </div>
+                    </div>
+
+                    <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
+                        <h3 class="font-bold mb-4 flex items-center gap-2 text-gray-800"><i data-lucide="map-pin" class="w-5 h-5 text-brand-orange"></i> Entrega</h3>
+                        <div class="space-y-3">
+                            <input type="text" id="input-name" oninput="checkForm()" placeholder="Seu Nome" class="w-full bg-gray-50 border border-gray-200 rounded-xl p-3.5 text-sm focus:border-brand-orange focus:ring-1 focus:ring-brand-orange outline-none transition-all">
+                            <div class="grid grid-cols-3 gap-3">
+                                <input type="text" id="input-street" oninput="checkForm()" placeholder="Rua" class="col-span-2 w-full bg-gray-50 border border-gray-200 rounded-xl p-3.5 text-sm focus:border-brand-orange focus:ring-1 focus:ring-brand-orange outline-none transition-all">
+                                <input type="number" id="input-number" oninput="checkForm()" placeholder="Nº" class="w-full bg-gray-50 border border-gray-200 rounded-xl p-3.5 text-sm focus:border-brand-orange focus:ring-1 focus:ring-brand-orange outline-none transition-all">
+                            </div>
+                            <input type="text" id="input-complement" oninput="checkForm()" placeholder="Bairro / Complemento" class="w-full bg-gray-50 border border-gray-200 rounded-xl p-3.5 text-sm focus:border-brand-orange focus:ring-1 focus:ring-brand-orange outline-none transition-all">
+                        </div>
+
+                        <div class="mt-6">
+                            <h3 class="font-bold mb-3 flex items-center gap-2 text-gray-800"><i data-lucide="wallet" class="w-5 h-5 text-brand-orange"></i> Pagamento</h3>
+                            <div class="grid grid-cols-3 gap-2">
+                                <label class="cursor-pointer relative">
+                                    <input type="radio" name="payment" value="Dinheiro" class="hidden peer" onchange="checkForm()">
+                                    <div class="border-2 border-transparent bg-gray-50 rounded-xl p-3 text-center text-xs font-bold text-gray-500 peer-checked:bg-green-50 peer-checked:text-green-700 peer-checked:border-green-500 transition-all flex flex-col items-center gap-1">
+                                        <i data-lucide="banknote" class="w-5 h-5 mb-1"></i> Dinheiro
+                                    </div>
+                                </label>
+                                <label class="cursor-pointer relative">
+                                    <input type="radio" name="payment" value="Pix" class="hidden peer" onchange="checkForm()">
+                                    <div class="border-2 border-transparent bg-gray-50 rounded-xl p-3 text-center text-xs font-bold text-gray-500 peer-checked:bg-blue-50 peer-checked:text-blue-700 peer-checked:border-blue-500 transition-all flex flex-col items-center gap-1">
+                                        <i data-lucide="qr-code" class="w-5 h-5 mb-1"></i> Pix
+                                    </div>
+                                </label>
+                                <label class="cursor-pointer relative">
+                                    <input type="radio" name="payment" value="Cartão" class="hidden peer" onchange="checkForm()">
+                                    <div class="border-2 border-transparent bg-gray-50 rounded-xl p-3 text-center text-xs font-bold text-gray-500 peer-checked:bg-orange-50 peer-checked:text-orange-700 peer-checked:border-orange-500 transition-all flex flex-col items-center gap-1">
+                                        <i data-lucide="credit-card" class="w-5 h-5 mb-1"></i> Cartão
+                                    </div>
+                                </label>
+                            </div>
+                        </div>
+
+                        <button id="btn-checkout" onclick="checkout()" disabled class="w-full mt-8 bg-gray-200 text-gray-400 py-4 rounded-xl font-bold text-lg shadow-none cursor-not-allowed transition-all flex items-center justify-center gap-2 opacity-70">Preencha para Finalizar</button>
+                    </div>
+                </div>`;
+            container.innerHTML = html;
+            lucide.createIcons();
+            updateHeaderTotal();
+        }
+
+        function renderAbout() {
+            const container = document.getElementById('app-content');
+            container.innerHTML = `
+                <div class="p-6 pb-32 animate-fade-in">
+                    <div class="flex flex-col items-center mb-10 mt-6">
+                        <div class="bg-gradient-to-br from-red-600 to-orange-500 text-white p-6 rounded-[2rem] mb-4 shadow-2xl shadow-orange-200 ring-4 ring-orange-50 transform -rotate-2">
+                            <i data-lucide="chef-hat" class="w-16 h-16"></i>
+                        </div>
+                        <h2 class="text-3xl font-display font-bold text-gray-800">${CONFIG.STORE_NAME}</h2>
+                        <p class="text-gray-500 text-center mt-2 max-w-xs font-medium">O melhor sabor da região, direto para sua casa.</p>
+                    </div>
+                    
+                    <div class="space-y-4">
+                        <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-5 flex items-center gap-4">
+                            <div class="bg-blue-50 text-blue-600 p-3 rounded-full"><i data-lucide="clock" class="w-6 h-6"></i></div>
+                            <div>
+                                <h3 class="font-bold text-gray-800">Horário de Funcionamento</h3>
+                                <p class="text-sm text-gray-500">Todos os dias: 18:00 às 23:59</p>
+                            </div>
+                        </div>
+                        
+                        <a href="https://wa.me/${CONFIG.PHONE_NUMBER}" class="bg-white rounded-2xl shadow-sm border border-gray-100 p-5 flex items-center gap-4 active:scale-95 transition-transform group">
+                            <div class="bg-green-50 text-green-600 p-3 rounded-full group-hover:bg-green-600 group-hover:text-white transition-colors"><i data-lucide="message-circle" class="w-6 h-6"></i></div>
+                            <div class="flex-1">
+                                <h3 class="font-bold text-gray-800">Falar no WhatsApp</h3>
+                                <p class="text-sm text-gray-500">Tire suas dúvidas agora</p>
+                            </div>
+                            <i data-lucide="chevron-right" class="text-gray-300"></i>
+                        </a>
+                    </div>
+
+                    <div class="text-center mt-12 border-t border-gray-100 pt-8">
+                        <p class="text-[10px] font-bold text-gray-400 uppercase tracking-[0.2em] mb-3">Desenvolvido Por</p>
+                        <a href="https://wa.me/5531993343405" class="inline-flex items-center gap-2 text-xs font-bold text-gray-500 hover:text-brand-orange transition-colors bg-white px-4 py-2 rounded-full shadow-sm border border-gray-100">
+                            <i data-lucide="code-2" class="w-3 h-3"></i> Jhony Web Sites
+                        </a>
+                    </div>
+                </div>`;
+            lucide.createIcons();
+        }
+
+        // --- LÓGICA ---
+        function addToCart(id, name, price, size = null) {
+            const cartId = size ? `${id}-${size}` : `${id}`;
+            const existing = cart.find(i => i.cartId === cartId);
+            if (existing) existing.quantity++;
+            else cart.push({ cartId, id, name, price, size, quantity: 1 });
+            
+            showToast(); updateBadge(); updateHeaderTotal();
+            
+            // Tocar somzinho ou vibrar (opcional)
+            if(navigator.vibrate) navigator.vibrate(50);
+        }
+
+        function updateQty(idx, change) {
+            cart[idx].quantity += change;
+            if (cart[idx].quantity <= 0) cart.splice(idx, 1);
+            renderCart(); updateBadge(); updateHeaderTotal();
+        }
+
+        function updateBadge() {
+            const count = cart.reduce((acc, i) => acc + i.quantity, 0);
+            const badge = document.getElementById('badge-count');
+            badge.innerText = count;
+            badge.style.opacity = count > 0 ? '1' : '0';
+            badge.classList.remove('scale-125');
+            setTimeout(() => badge.classList.add('scale-125'), 50); // Efeito Pop
+            setTimeout(() => badge.classList.remove('scale-125'), 200);
+        }
+
+        function updateHeaderTotal() {
+            const total = cart.reduce((acc, i) => acc + (i.price * i.quantity), 0);
+            const el = document.getElementById('header-cart-info');
+            document.getElementById('header-total').innerText = total.toLocaleString('pt-BR', { minimumFractionDigits: 2 });
+            if (total > 0) el.classList.remove('hidden'); else el.classList.add('hidden');
+        }
+
+        // --- MODAL PIZZA ATUALIZADO (M/G/GG) ---
+        function openVariantModal(item) {
+            tempVariantSelection = item;
+            document.getElementById('modal-variant-title').innerText = item.name;
+            
+            // Set prices
+            document.getElementById('price-M').innerText = formatMoney(item.priceM);
+            document.getElementById('price-G').innerText = formatMoney(item.priceG);
+            document.getElementById('price-GG').innerText = formatMoney(item.priceGG);
+            
+            // Reset visual
+            ['M', 'G', 'GG'].forEach(s => {
+                const radio = document.getElementById(`radio-${s}`);
+                const dot = document.getElementById(`dot-${s}`);
+                const parent = radio.parentElement.parentElement.parentElement; // Label
+                
+                radio.classList.replace('border-orange-500', 'border-gray-300');
+                dot.classList.add('hidden');
+                parent.classList.remove('border-orange-500', 'bg-orange-50');
+                parent.classList.add('border-gray-100');
+            });
+            
+            selectedSizeCode = null;
+            document.getElementById('variant-modal').classList.remove('hidden');
+        }
+
+        function closeModal() { document.getElementById('variant-modal').classList.add('hidden'); }
+
+        let selectedSizeCode = null;
+        function selectSize(size) {
+            selectedSizeCode = size;
+            ['M', 'G', 'GG'].forEach(s => {
+                const radio = document.getElementById(`radio-${s}`);
+                const dot = document.getElementById(`dot-${s}`);
+                const parent = radio.parentElement.parentElement.parentElement; 
+                
+                if (s === size) {
+                    radio.classList.replace('border-gray-300', 'border-orange-500');
+                    dot.classList.remove('hidden');
+                    parent.classList.add('border-orange-500', 'bg-orange-50');
+                    parent.classList.remove('border-gray-100');
+                } else {
+                    radio.classList.replace('border-orange-500', 'border-gray-300');
+                    dot.classList.add('hidden');
+                    parent.classList.remove('border-orange-500', 'bg-orange-50');
+                    parent.classList.add('border-gray-100');
+                }
+            });
+        }
+
+        function confirmVariantAdd() {
+            if (!tempVariantSelection || !selectedSizeCode) return;
+            const price = tempVariantSelection[`price${selectedSizeCode}`];
+            const labels = { 'M': 'Média (4 fat)', 'G': 'Grande (8 fat)', 'GG': 'Gigante (8 fat)' };
+            
+            addToCart(tempVariantSelection.id, tempVariantSelection.name, price, labels[selectedSizeCode]);
+            closeModal();
+        }
+
+        function checkForm() {
+            const name = document.getElementById('input-name').value;
+            const street = document.getElementById('input-street').value;
+            const number = document.getElementById('input-number').value;
+            const btn = document.getElementById('btn-checkout');
+            if (name && street && number) {
+                btn.disabled = false;
+                btn.classList.remove('bg-gray-200', 'text-gray-400', 'cursor-not-allowed', 'opacity-70');
+                btn.classList.add('bg-green-600', 'text-white', 'shadow-lg', 'active:scale-95');
+                btn.innerHTML = `Enviar Pedido WhatsApp <i data-lucide="message-circle" class="w-5 h-5"></i>`;
+                lucide.createIcons();
+            } else {
+                btn.disabled = true;
+                btn.classList.add('bg-gray-200', 'text-gray-400', 'cursor-not-allowed', 'opacity-70');
+                btn.classList.remove('bg-green-600', 'text-white', 'shadow-lg', 'active:scale-95');
+                btn.innerHTML = `Preencha para Finalizar`;
+            }
+        }
+
+        function showToast() {
+            const t = document.getElementById('toast');
+            t.style.opacity = '1'; t.style.transform = 'translate(-50%, 0) scale(1)';
+            setTimeout(() => { t.style.opacity = '0'; t.style.transform = 'translate(-50%, -10px) scale(0.9)'; }, 2000);
+        }
+
+        function switchTab(t) {
+            ['menu','cart','about'].forEach(x => {
+                const el = document.getElementById(`nav-${x}`);
+                if (x === t) { el.classList.add('tab-active'); el.classList.remove('tab-inactive'); }
+                else { el.classList.add('tab-inactive'); el.classList.remove('tab-active'); }
+            });
+            document.getElementById('app-content').scrollTop = 0;
+            if (t === 'menu') renderMenu();
+            if (t === 'cart') renderCart();
+            if (t === 'about') renderAbout();
+        }
+
+        function checkout() {
+            const name = document.getElementById('input-name').value;
+            const street = document.getElementById('input-street').value;
+            const number = document.getElementById('input-number').value;
+            const comp = document.getElementById('input-complement').value;
+            const pay = document.querySelector('input[name="payment"]:checked')?.value || "Não informado";
+            
+            let msg = `*NOVO PEDIDO - ${CONFIG.STORE_NAME}*\n--------------------------------\n👤 *Cliente:* ${name}\n\n🛒 *ITENS:*\n`;
+            cart.forEach(i => msg += `${i.quantity}x ${i.name} ${i.size ? `(${i.size})` : ''} - ${formatMoney(i.price * i.quantity)}\n`);
+            
+            const total = cart.reduce((acc, i) => acc + (i.price * i.quantity), 0) + CONFIG.DELIVERY_FEE;
+            msg += `\n📦 *Total:* ${formatMoney(total)}\n--------------------------------\n📍 *Endereço:* ${street}, Nº ${number} - ${comp}\n💳 *Pagamento:* ${pay}`;
+            
+            window.open(`https://wa.me/${CONFIG.PHONE_NUMBER}?text=${encodeURIComponent(msg)}`, '_blank');
+        }
+
+        window.onload = init;
+    </script>
+</body>
+</html>
